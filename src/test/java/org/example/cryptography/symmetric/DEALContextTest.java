@@ -142,7 +142,7 @@ public class DEALContextTest {
         (byte) 0x54, (byte) 0xF4, (byte) 0x82, (byte) 0x74, (byte) 0x72, (byte) 0xD6, (byte) 0x4A, (byte) 0x1F,
     };
 
-    String in = testDirectory + "/b_tree_tests.cpp";
+    String in = testDirectory + "/b_tree_tests";
     String encOut = testDirectory + "/encryptedBTreeTests";
     String decOut = testDirectory + "/decryptedBTreeTests";
 

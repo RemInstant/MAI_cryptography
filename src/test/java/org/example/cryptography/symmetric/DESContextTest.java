@@ -1414,7 +1414,7 @@ public class DESContextTest {
         (byte) 0x5a, (byte) 0xa8, (byte) 0x08, (byte) 0x43, (byte) 0x19, (byte) 0xe5, (byte) 0xd8, (byte) 0x2d,
     };
 
-    String in = testDirectory + "/b_tree_tests.cpp";
+    String in = testDirectory + "/b_tree_tests";
     String encOut = testDirectory + "/encryptedBTreeTests";
     String decOut = testDirectory + "/decryptedBTreeTests";
 
