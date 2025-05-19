@@ -1,5 +1,7 @@
 package org.reminstant.concurrent;
 
+import org.reminstant.concurrent.functions.ThrowingRunnable;
+import org.reminstant.concurrent.functions.ThrowingSupplier;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -18,7 +20,7 @@ public class ChainableFutureUseCasesTest {
     AtomicBoolean endFlag = new AtomicBoolean(false);
     AtomicBoolean checkFlag = new AtomicBoolean(false);
 
-    Callable<Integer> callable = () -> {
+    ThrowingSupplier<Integer> supplier = () -> {
       startFlag.set(true);
       int q = 1;
       for (int i = 0; i < 10_000_000; ++i) {
@@ -29,10 +31,10 @@ public class ChainableFutureUseCasesTest {
       return q;
     };
 
-    Runnable startAwaiter = getBooleanAwaiter(startFlag);
+    ThrowingRunnable startAwaiter = getBooleanAwaiter(startFlag);
 
     // EXECUTION
-    ChainableFuture<Integer> f = ChainableFuture.executeStronglyAsync(callable);
+    ChainableFuture<Integer> f = ChainableFuture.supplyStronglyAsync(supplier);
 
     ChainableFuture.runWeaklyAsync(startAwaiter).waitCompletion(20, TimeUnit.SECONDS);
     f.cancel(true);
@@ -61,7 +63,7 @@ public class ChainableFutureUseCasesTest {
     AtomicBoolean endFlag = new AtomicBoolean(false);
     AtomicBoolean checkFlag = new AtomicBoolean(false);
 
-    Callable<Integer> callable = () -> {
+    ThrowingSupplier<Integer> supplier = () -> {
       startFlag.set(true);
       int q = 1;
       for (int i = 0; i < 10_000_000; ++i) {
@@ -72,11 +74,11 @@ public class ChainableFutureUseCasesTest {
       return q;
     };
 
-    Runnable startAwaiter = getBooleanAwaiter(startFlag);
-    Runnable endAwaiter = getBooleanAwaiter(endFlag);
+    ThrowingRunnable startAwaiter = getBooleanAwaiter(startFlag);
+    ThrowingRunnable endAwaiter = getBooleanAwaiter(endFlag);
 
     // EXECUTION
-    ChainableFuture<Integer> f = ChainableFuture.executeStronglyAsync(callable);
+    ChainableFuture<Integer> f = ChainableFuture.supplyStronglyAsync(supplier);
 
     ChainableFuture.runStronglyAsync(startAwaiter).waitCompletion(20, TimeUnit.SECONDS);
     f.cancel(true);
@@ -107,7 +109,7 @@ public class ChainableFutureUseCasesTest {
     AtomicBoolean endFlag = new AtomicBoolean(false);
     AtomicBoolean checkFlag = new AtomicBoolean(false);
 
-    Callable<Integer> callable = () -> {
+    ThrowingSupplier<Integer> supplier = () -> {
       startFlag.set(true);
       int q = 1;
       for (int i = 0; i < 10_000_000; ++i) {
@@ -123,11 +125,11 @@ public class ChainableFutureUseCasesTest {
       return q;
     };
 
-    Runnable startAwaiter = getBooleanAwaiter(startFlag);
-    Runnable endAwaiter = getBooleanAwaiter(endFlag);
+    ThrowingRunnable startAwaiter = getBooleanAwaiter(startFlag);
+    ThrowingRunnable endAwaiter = getBooleanAwaiter(endFlag);
 
     // EXECUTION
-    ChainableFuture<Integer> f = ChainableFuture.executeStronglyAsync(callable);
+    ChainableFuture<Integer> f = ChainableFuture.supplyStronglyAsync(supplier);
 
     ChainableFuture.runStronglyAsync(startAwaiter).waitCompletion(20, TimeUnit.SECONDS);
     f.cancel(true);
@@ -156,7 +158,7 @@ public class ChainableFutureUseCasesTest {
     AtomicBoolean startFlag = new AtomicBoolean(false);
     AtomicBoolean endFlag = new AtomicBoolean(false);
 
-    Callable<Integer> callable = () -> {
+    ThrowingSupplier<Integer> supplier = () -> {
       startFlag.set(true);
       resource.set(true);
       while (!Thread.interrupted());
@@ -166,11 +168,11 @@ public class ChainableFutureUseCasesTest {
       return 1;
     };
 
-    Runnable startAwaiter = getBooleanAwaiter(startFlag);
-    Runnable endAwaiter = getBooleanAwaiter(endFlag);
+    ThrowingRunnable startAwaiter = getBooleanAwaiter(startFlag);
+    ThrowingRunnable endAwaiter = getBooleanAwaiter(endFlag);
 
     // EXECUTION
-    ChainableFuture<Integer> f = ChainableFuture.executeStronglyAsync(callable);
+    ChainableFuture<Integer> f = ChainableFuture.supplyStronglyAsync(supplier);
 
     ChainableFuture.runStronglyAsync(startAwaiter).waitCompletion(20, TimeUnit.SECONDS);
     f.cancel(true);
@@ -183,7 +185,7 @@ public class ChainableFutureUseCasesTest {
   }
 
 
-  private Runnable getBooleanAwaiter(AtomicBoolean bool) {
+  private ThrowingRunnable getBooleanAwaiter(AtomicBoolean bool) {
     return () -> {
       while (!bool.get()) {
         uncheckedSleep(Duration.ofMillis(5));

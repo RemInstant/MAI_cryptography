@@ -2,6 +2,7 @@ package org.reminstant.concurrent;
 
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
+import org.reminstant.concurrent.functions.ThrowingFunctions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,10 +58,10 @@ public class ChainableFutureBenchmark {
     @Benchmark
     public void testChainableFutureTaskChain() throws InterruptedException {
       ChainableFuture<Integer> f = ChainableFuture
-          .executeStronglyAsync(() -> chainInitTask.get())
-          .thenStronglyMapAsync(chainMapTask)
-          .thenStronglyMapAsync(chainMapTask)
-          .thenStronglyMapAsync(chainMapTask);
+          .supplyStronglyAsync(() -> chainInitTask.get())
+          .thenStronglyMapAsync(ThrowingFunctions.convert(chainMapTask))
+          .thenStronglyMapAsync(ThrowingFunctions.convert(chainMapTask))
+          .thenStronglyMapAsync(ThrowingFunctions.convert(chainMapTask));
 
       f.waitCompletion();
     }

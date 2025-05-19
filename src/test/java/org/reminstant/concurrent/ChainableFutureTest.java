@@ -1,5 +1,8 @@
 package org.reminstant.concurrent;
 
+import org.reminstant.concurrent.functions.ThrowingFunction;
+import org.reminstant.concurrent.functions.ThrowingFunctions;
+import org.reminstant.concurrent.functions.ThrowingSupplier;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -18,13 +21,13 @@ public class ChainableFutureTest {
   private Throwable handlerTraceException;
 
   private RuntimeException runtimeException;
-  private Callable<Integer> slowSupplier;
-  private Callable<Integer> fastSupplier;
-  private Callable<Integer> throwSupplier;
-  private Function<Integer, Integer> slowIncrement;
-  private Function<Integer, Integer> fastIncrement;
-  private Function<Integer, Integer> throwIncrement;
-  private Function<Throwable, Integer> handler;
+  private ThrowingSupplier<Integer> slowSupplier;
+  private ThrowingSupplier<Integer> fastSupplier;
+  private ThrowingSupplier<Integer> throwSupplier;
+  private ThrowingFunction<Integer, Integer> slowIncrement;
+  private ThrowingFunction<Integer, Integer> fastIncrement;
+  private ThrowingFunction<Integer, Integer> throwIncrement;
+  private ThrowingFunction<Throwable, Integer> handler;
   private Function<Integer, Future<Integer>> slowAsyncIncrement;
   private Function<Integer, Future<Integer>> fastAsyncIncrement;
   private Function<Integer, Future<Integer>> throwAsyncIncrement;
@@ -67,9 +70,9 @@ public class ChainableFutureTest {
       return null;
     };
 
-    slowAsyncIncrement = x -> ChainableFuture.executeStronglyAsync(() -> slowIncrement.apply(x));
-    fastAsyncIncrement = x -> ChainableFuture.executeStronglyAsync(() -> fastIncrement.apply(x));
-    throwAsyncIncrement = x -> ChainableFuture.executeStronglyAsync(() -> throwIncrement.apply(x));
+    slowAsyncIncrement = x -> ChainableFuture.supplyStronglyAsync(() -> slowIncrement.apply(x));
+    fastAsyncIncrement = x -> ChainableFuture.supplyStronglyAsync(() -> fastIncrement.apply(x));
+    throwAsyncIncrement = x -> ChainableFuture.supplyStronglyAsync(() -> throwIncrement.apply(x));
   }
 
   @BeforeMethod
@@ -81,7 +84,7 @@ public class ChainableFutureTest {
   @Test
   void testRunSuccess() throws ExecutionException, InterruptedException, TimeoutException {
     // EXECUTION
-    ChainableFuture<Integer> f = ChainableFuture.executeStronglyAsync(fastSupplier);
+    ChainableFuture<Integer> f = ChainableFuture.supplyStronglyAsync(fastSupplier);
 
     int res = f.get(1, TimeUnit.MINUTES);
 
@@ -94,7 +97,7 @@ public class ChainableFutureTest {
   @Test
   void testRunExecution() {
     // EXECUTION
-    ChainableFuture<Integer> f = ChainableFuture.executeStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> f = ChainableFuture.supplyStronglyAsync(slowSupplier);
 
     // ASSERTION
     Assert.assertFalse(f.isDone());
@@ -106,7 +109,7 @@ public class ChainableFutureTest {
   void testRunFailure() {
     // EXECUTION
     Throwable exception = null;
-    ChainableFuture<Integer> f = ChainableFuture.executeStronglyAsync(throwSupplier);
+    ChainableFuture<Integer> f = ChainableFuture.supplyStronglyAsync(throwSupplier);
 
     try {
       f.get(1, TimeUnit.MINUTES);
@@ -127,7 +130,7 @@ public class ChainableFutureTest {
   void testRunCancellation() {
     // EXECUTION
     Throwable exception = null;
-    ChainableFuture<Integer> f = ChainableFuture.executeStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> f = ChainableFuture.supplyStronglyAsync(slowSupplier);
 
     f.cancel(true);
     try {
@@ -149,7 +152,7 @@ public class ChainableFutureTest {
   void testApplySuccess() throws ExecutionException, InterruptedException, TimeoutException {
     // EXECUTION
     ChainableFuture<Integer> f = ChainableFuture
-        .executeStronglyAsync(fastSupplier)
+        .supplyStronglyAsync(fastSupplier)
         .thenStronglyMapAsync(fastIncrement)
         .thenStronglyMapAsync(fastIncrement)
         .thenStronglyMapAsync(fastIncrement)
@@ -167,7 +170,7 @@ public class ChainableFutureTest {
   void testApplyExecution() {
     // EXECUTION
     ChainableFuture<Integer> f = ChainableFuture
-        .executeStronglyAsync(slowSupplier)
+        .supplyStronglyAsync(slowSupplier)
         .thenStronglyMapAsync(slowIncrement);
 
     // ASSERTION
@@ -180,7 +183,7 @@ public class ChainableFutureTest {
   void testApplyFailure() {
     // EXECUTION
     ChainableFuture<Integer> f = ChainableFuture
-        .executeStronglyAsync(fastSupplier)
+        .supplyStronglyAsync(fastSupplier)
         .thenStronglyMapAsync(fastIncrement)
         .thenStronglyMapAsync(throwIncrement);
 
@@ -195,7 +198,7 @@ public class ChainableFutureTest {
   @Test
   void testApplyHeadCancellation() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyStronglyAsync(slowSupplier);
     ChainableFuture<Integer> tail = head.thenStronglyMapAsync(slowIncrement);
 
     head.cancel(true);
@@ -212,7 +215,7 @@ public class ChainableFutureTest {
   @Test
   void testApplyHeadCancellationAfterHeadDone() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeStronglyAsync(fastSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyStronglyAsync(fastSupplier);
     ChainableFuture<Integer> tail = head.thenStronglyMapAsync(fastIncrement);
 
     uncheckedWaitForTaskCompletion(head);
@@ -230,7 +233,7 @@ public class ChainableFutureTest {
   @Test
   void testApplyTailCancellationWithStrongHead() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeStronglyAsync(fastSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyStronglyAsync(fastSupplier);
     ChainableFuture<Integer> tail = head.thenStronglyMapAsync(slowIncrement);
 
     tail.cancel(true);
@@ -247,7 +250,7 @@ public class ChainableFutureTest {
   @Test
   void testApplyTailCancellationWithWeakHead() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeWeaklyAsync(slowSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyWeaklyAsync(slowSupplier);
     ChainableFuture<Integer> tail = head.thenStronglyMapAsync(slowIncrement);
 
     tail.cancel(true);
@@ -264,7 +267,7 @@ public class ChainableFutureTest {
   @Test
   void testApplyPartialChildrenCancellationWithWeakHead() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeWeaklyAsync(slowSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyWeaklyAsync(slowSupplier);
     ChainableFuture<Integer> child1 = head.thenStronglyMapAsync(slowIncrement);
     ChainableFuture<Integer> child2 = head.thenStronglyMapAsync(slowIncrement);
     ChainableFuture<Integer> child3 = head.thenStronglyMapAsync(fastIncrement);
@@ -288,7 +291,7 @@ public class ChainableFutureTest {
   @Test
   void testApplyOverallChildrenCancellationWithWeakHead() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeWeaklyAsync(slowSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyWeaklyAsync(slowSupplier);
     ChainableFuture<Integer> child1 = head.thenStronglyMapAsync(slowIncrement);
     ChainableFuture<Integer> child2 = head.thenStronglyMapAsync(slowIncrement);
     ChainableFuture<Integer> child3 = head.thenStronglyMapAsync(slowIncrement);
@@ -315,7 +318,7 @@ public class ChainableFutureTest {
   void testHandleSuccess() {
     // EXECUTION
     ChainableFuture<Integer> f = ChainableFuture
-        .executeStronglyAsync(fastSupplier)
+        .supplyStronglyAsync(fastSupplier)
         .thenStronglyHandleAsync(handler);
 
     uncheckedWaitForTaskCompletion(f);
@@ -330,7 +333,7 @@ public class ChainableFutureTest {
   void testHandleExecution() {
     // EXECUTION
     ChainableFuture<Integer> f = ChainableFuture
-        .executeStronglyAsync(slowSupplier)
+        .supplyStronglyAsync(slowSupplier)
         .thenStronglyHandleAsync(handler);
 
     // ASSERTION
@@ -343,7 +346,7 @@ public class ChainableFutureTest {
   void testHandleFailure() {
     // EXECUTION
     ChainableFuture<Integer> f = ChainableFuture
-        .executeStronglyAsync(throwSupplier)
+        .supplyStronglyAsync(throwSupplier)
         .thenStronglyHandleAsync(handler);
 
     uncheckedWaitForTaskCompletion(f);
@@ -359,7 +362,7 @@ public class ChainableFutureTest {
   @Test
   void testHandleHeadCancellation() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyStronglyAsync(slowSupplier);
     ChainableFuture<Integer> tail = head.thenStronglyHandleAsync(handler);
 
     head.cancel(true);
@@ -377,7 +380,7 @@ public class ChainableFutureTest {
   @Test
   void testHandleHeadCancellationAfterHeadDone() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeStronglyAsync(fastSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyStronglyAsync(fastSupplier);
     ChainableFuture<Integer> tail = head.thenStronglyHandleAsync(handler);
 
     uncheckedWaitForTaskCompletion(head);
@@ -395,7 +398,7 @@ public class ChainableFutureTest {
   @Test
   void testHandleTailCancellationWithStrongHead() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeStronglyAsync(fastSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyStronglyAsync(fastSupplier);
     ChainableFuture<Integer> tail = head.thenStronglyHandleAsync(handler);
 
     tail.cancel(true);
@@ -412,7 +415,7 @@ public class ChainableFutureTest {
   @Test
   void testHandleTailCancellationWithWeakHead() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeWeaklyAsync(fastSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyWeaklyAsync(fastSupplier);
     ChainableFuture<Integer> tail = head.thenStronglyHandleAsync(handler);
 
     tail.cancel(true);
@@ -429,7 +432,7 @@ public class ChainableFutureTest {
   @Test
   void testHandlePartialChildrenCancellationWithWeakHead() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeWeaklyAsync(slowSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyWeaklyAsync(slowSupplier);
     ChainableFuture<Integer> child1 = head.thenStronglyHandleAsync(handler);
     ChainableFuture<Integer> child2 = head.thenStronglyHandleAsync(handler);
     ChainableFuture<Integer> child3 = head.thenStronglyHandleAsync(handler);
@@ -452,7 +455,7 @@ public class ChainableFutureTest {
   @Test
   void testHandleOverallChildrenCancellationWithWeakHead() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeWeaklyAsync(slowSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyWeaklyAsync(slowSupplier);
     ChainableFuture<Integer> child1 = head.thenStronglyHandleAsync(handler);
     ChainableFuture<Integer> child2 = head.thenStronglyHandleAsync(handler);
     ChainableFuture<Integer> child3 = head.thenStronglyHandleAsync(handler);
@@ -476,7 +479,7 @@ public class ChainableFutureTest {
   @Test
   void testHandleTransitivityAfterHeadFailure() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeStronglyAsync(throwSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyStronglyAsync(throwSupplier);
     ChainableFuture<Integer> tail = head
         .thenStronglyMapAsync(fastIncrement)
         .thenStronglyHandleAsync(handler);
@@ -503,7 +506,7 @@ public class ChainableFutureTest {
   @Test
   void testHandleTransitivityAfterHeadCancellation() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyStronglyAsync(slowSupplier);
     ChainableFuture<Integer> tail = head
         .thenStronglyMapAsync(fastIncrement)
         .thenStronglyHandleAsync(handler);
@@ -530,7 +533,7 @@ public class ChainableFutureTest {
   @Test
   void testHandleLongTransitivityAfterHeadFailed() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeStronglyAsync(throwSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyStronglyAsync(throwSupplier);
     ChainableFuture<Integer> tail = head
         .thenStronglyMapAsync(fastIncrement)
         .thenStronglyMapAsync(fastIncrement)
@@ -569,7 +572,7 @@ public class ChainableFutureTest {
   @Test
   void testHandleLongTransitivityAfterHeadCancellation() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyStronglyAsync(slowSupplier);
     ChainableFuture<Integer> tail = head
         .thenStronglyMapAsync(fastIncrement)
         .thenStronglyMapAsync(fastIncrement)
@@ -610,7 +613,7 @@ public class ChainableFutureTest {
   void testComposeSuccess() throws ExecutionException, InterruptedException, TimeoutException {
     // EXECUTION
     ChainableFuture<Integer> f = ChainableFuture
-        .executeStronglyAsync(fastSupplier)
+        .supplyStronglyAsync(fastSupplier)
         .thenStronglyComposeAsync(fastAsyncIncrement)
         .thenStronglyComposeAsync(fastAsyncIncrement)
         .thenStronglyComposeAsync(fastAsyncIncrement)
@@ -628,7 +631,7 @@ public class ChainableFutureTest {
   void testComposeExecution() {
     // EXECUTION
     ChainableFuture<Integer> f = ChainableFuture
-        .executeStronglyAsync(slowSupplier)
+        .supplyStronglyAsync(slowSupplier)
         .thenStronglyComposeAsync(slowAsyncIncrement);
 
     // ASSERTION
@@ -641,7 +644,7 @@ public class ChainableFutureTest {
   void testComposeFailure() {
     // EXECUTION
     ChainableFuture<Integer> f = ChainableFuture
-        .executeStronglyAsync(fastSupplier)
+        .supplyStronglyAsync(fastSupplier)
         .thenStronglyComposeAsync(fastAsyncIncrement)
         .thenStronglyComposeAsync(throwAsyncIncrement);
 
@@ -656,7 +659,7 @@ public class ChainableFutureTest {
   @Test
   void testComposeHeadCancellation() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyStronglyAsync(slowSupplier);
     ChainableFuture<Integer> tail = head.thenStronglyComposeAsync(slowAsyncIncrement);
 
     head.cancel(true);
@@ -673,7 +676,7 @@ public class ChainableFutureTest {
   @Test
   void testComposeHeadCancellationAfterHeadDone() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeStronglyAsync(fastSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyStronglyAsync(fastSupplier);
     ChainableFuture<Integer> tail = head.thenStronglyComposeAsync(fastAsyncIncrement);
 
     uncheckedWaitForTaskCompletion(head);
@@ -691,7 +694,7 @@ public class ChainableFutureTest {
   @Test
   void testComposeTailCancellationWithStrongHead() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeStronglyAsync(fastSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyStronglyAsync(fastSupplier);
     ChainableFuture<Integer> tail = head.thenStronglyComposeAsync(slowAsyncIncrement);
 
     tail.cancel(true);
@@ -708,7 +711,7 @@ public class ChainableFutureTest {
   @Test
   void testComposeTailCancellationWithWeakHead() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeWeaklyAsync(slowSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyWeaklyAsync(slowSupplier);
     ChainableFuture<Integer> tail = head.thenStronglyComposeAsync(slowAsyncIncrement);
 
     tail.cancel(true);
@@ -725,7 +728,7 @@ public class ChainableFutureTest {
   @Test
   void testComposePartialChildrenCancellationWithWeakHead() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeWeaklyAsync(slowSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyWeaklyAsync(slowSupplier);
     ChainableFuture<Integer> child1 = head.thenStronglyComposeAsync(slowAsyncIncrement);
     ChainableFuture<Integer> child2 = head.thenStronglyComposeAsync(slowAsyncIncrement);
     ChainableFuture<Integer> child3 = head.thenStronglyComposeAsync(fastAsyncIncrement);
@@ -749,7 +752,7 @@ public class ChainableFutureTest {
   @Test
   void testComposeOverallChildrenCancellationWithWeakHead() {
     // EXECUTION
-    ChainableFuture<Integer> head = ChainableFuture.executeWeaklyAsync(slowSupplier);
+    ChainableFuture<Integer> head = ChainableFuture.supplyWeaklyAsync(slowSupplier);
     ChainableFuture<Integer> child1 = head.thenStronglyComposeAsync(slowAsyncIncrement);
     ChainableFuture<Integer> child2 = head.thenStronglyComposeAsync(slowAsyncIncrement);
     ChainableFuture<Integer> child3 = head.thenStronglyComposeAsync(slowAsyncIncrement);
@@ -775,9 +778,9 @@ public class ChainableFutureTest {
   @Test
   void testAwaitAllSuccess() {
     // EXECUTION
-    ChainableFuture<Integer> parent1 = ChainableFuture.executeStronglyAsync(fastSupplier);
-    ChainableFuture<Integer> parent2 = ChainableFuture.executeStronglyAsync(fastSupplier);
-    ChainableFuture<Integer> parent3 = ChainableFuture.executeStronglyAsync(fastSupplier);
+    ChainableFuture<Integer> parent1 = ChainableFuture.supplyStronglyAsync(fastSupplier);
+    ChainableFuture<Integer> parent2 = ChainableFuture.supplyStronglyAsync(fastSupplier);
+    ChainableFuture<Integer> parent3 = ChainableFuture.supplyStronglyAsync(fastSupplier);
     ChainableFuture<Void> collector = ChainableFuture.awaitAllStronglyAsync(List.of(parent1, parent2, parent3));
 
     uncheckedWaitForTaskCompletion(collector);
@@ -794,9 +797,9 @@ public class ChainableFutureTest {
   @Test
   void testAwaitAllExecution() {
     // EXECUTION
-    ChainableFuture<Integer> parent1 = ChainableFuture.executeStronglyAsync(slowSupplier);
-    ChainableFuture<Integer> parent2 = ChainableFuture.executeStronglyAsync(slowSupplier);
-    ChainableFuture<Integer> parent3 = ChainableFuture.executeStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> parent1 = ChainableFuture.supplyStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> parent2 = ChainableFuture.supplyStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> parent3 = ChainableFuture.supplyStronglyAsync(slowSupplier);
     ChainableFuture<Void> collector = ChainableFuture.awaitAllStronglyAsync(List.of(parent1, parent2, parent3));
 
     // ASSERTION
@@ -811,9 +814,9 @@ public class ChainableFutureTest {
   @Test
   void testAwaitAllFailure() {
     // EXECUTION
-    ChainableFuture<Integer> parent1 = ChainableFuture.executeStronglyAsync(slowSupplier);
-    ChainableFuture<Integer> parent2 = ChainableFuture.executeStronglyAsync(slowSupplier);
-    ChainableFuture<Integer> parent3 = ChainableFuture.executeStronglyAsync(throwSupplier);
+    ChainableFuture<Integer> parent1 = ChainableFuture.supplyStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> parent2 = ChainableFuture.supplyStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> parent3 = ChainableFuture.supplyStronglyAsync(throwSupplier);
     ChainableFuture<Void> collector = ChainableFuture.awaitAllStronglyAsync(List.of(parent1, parent2, parent3));
 
     uncheckedWaitForTaskCompletion(collector);
@@ -833,9 +836,9 @@ public class ChainableFutureTest {
   @Test
   void testAwaitAllPartialParentCancellation() {
     // EXECUTION
-    ChainableFuture<Integer> parent1 = ChainableFuture.executeStronglyAsync(slowSupplier);
-    ChainableFuture<Integer> parent2 = ChainableFuture.executeStronglyAsync(slowSupplier);
-    ChainableFuture<Integer> parent3 = ChainableFuture.executeStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> parent1 = ChainableFuture.supplyStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> parent2 = ChainableFuture.supplyStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> parent3 = ChainableFuture.supplyStronglyAsync(slowSupplier);
     ChainableFuture<Void> collector = ChainableFuture.awaitAllStronglyAsync(List.of(parent1, parent2, parent3));
 
     parent1.cancel(true);
@@ -857,9 +860,9 @@ public class ChainableFutureTest {
   @Test
   void testAwaitAllOverallParentCancellation() {
     // EXECUTION
-    ChainableFuture<Integer> parent1 = ChainableFuture.executeStronglyAsync(slowSupplier);
-    ChainableFuture<Integer> parent2 = ChainableFuture.executeStronglyAsync(slowSupplier);
-    ChainableFuture<Integer> parent3 = ChainableFuture.executeStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> parent1 = ChainableFuture.supplyStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> parent2 = ChainableFuture.supplyStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> parent3 = ChainableFuture.supplyStronglyAsync(slowSupplier);
     ChainableFuture<Void> collector = ChainableFuture.awaitAllStronglyAsync(List.of(parent1, parent2, parent3));
 
     parent1.cancel(true);
@@ -882,9 +885,9 @@ public class ChainableFutureTest {
   @Test
   void testAwaitAllCancellationWithStrongParents() {
     // EXECUTION
-    ChainableFuture<Integer> parent1 = ChainableFuture.executeStronglyAsync(slowSupplier);
-    ChainableFuture<Integer> parent2 = ChainableFuture.executeStronglyAsync(slowSupplier);
-    ChainableFuture<Integer> parent3 = ChainableFuture.executeStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> parent1 = ChainableFuture.supplyStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> parent2 = ChainableFuture.supplyStronglyAsync(slowSupplier);
+    ChainableFuture<Integer> parent3 = ChainableFuture.supplyStronglyAsync(slowSupplier);
     ChainableFuture<Void> collector = ChainableFuture.awaitAllStronglyAsync(List.of(parent1, parent2, parent3));
 
     collector.cancel(true);
@@ -905,9 +908,9 @@ public class ChainableFutureTest {
   @Test
   void testAwaitAllCancellationWithWeakParents() {
     // EXECUTION
-    ChainableFuture<Integer> parent1 = ChainableFuture.executeWeaklyAsync(slowSupplier);
-    ChainableFuture<Integer> parent2 = ChainableFuture.executeWeaklyAsync(slowSupplier);
-    ChainableFuture<Integer> parent3 = ChainableFuture.executeWeaklyAsync(slowSupplier);
+    ChainableFuture<Integer> parent1 = ChainableFuture.supplyWeaklyAsync(slowSupplier);
+    ChainableFuture<Integer> parent2 = ChainableFuture.supplyWeaklyAsync(slowSupplier);
+    ChainableFuture<Integer> parent3 = ChainableFuture.supplyWeaklyAsync(slowSupplier);
     ChainableFuture<Void> collector = ChainableFuture.awaitAllStronglyAsync(List.of(parent1, parent2, parent3));
 
     collector.cancel(true);
@@ -992,17 +995,6 @@ public class ChainableFutureTest {
 //    Assert.assertNull(traceValue);
 //  }
 
-  @Test
-  void ttest() throws ExecutionException, InterruptedException {
-    var future = ChainableFuture.executeStronglyAsync(() -> {
-      if (5 == 5) {
-        throw new IOException("123");
-      }
-      return 5;
-    }).thenStronglyMapAsync(a -> 2*a).thenStronglyMapAsync(a -> 2*a).thenStronglyMapAsync(a -> 2*a);
-
-    System.out.println(future.get());
-  }
 
 
   private void uncheckedSleep(Duration duration) {
