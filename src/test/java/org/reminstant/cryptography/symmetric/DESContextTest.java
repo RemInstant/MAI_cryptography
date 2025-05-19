@@ -1499,6 +1499,31 @@ public class DESContextTest {
   }
 
 //  @Test
+//  void testPictureFileCycle2() throws IOException {
+//    // SETUP
+//    byte[] key = {
+//        (byte) 0x55, (byte) 0x46, (byte) 0xEA, (byte) 0xDD, (byte) 0x5C, (byte) 0x59, (byte) 0xE9
+//    };
+//    byte[] initVector = {
+//        (byte) 0x5a, (byte) 0xa8, (byte) 0x08, (byte) 0x43, (byte) 0x19, (byte) 0xe5, (byte) 0xd8, (byte) 0x2d,
+//    };
+//
+//    String in = testDirectory + "/picture.jpg";
+//    String encOut = testDirectory + "/encryptedPicture";
+//    String decOut = testDirectory + "/decryptedPicture.jpg";
+//
+//    // EXECUTION
+//    var cryptoSystem = new DES(key);
+//    var cryptoContext = new SymmetricCryptoContext(cryptoSystem, Padding.ANSI_X923, BlockCipherMode.OFB, initVector);
+//
+//    cryptoContext.encrypt(in, encOut);
+//    cryptoContext.decrypt(encOut, decOut);
+//
+//    // ASSERTION
+//    Assert.assertTrue(areFilesEqual(in, decOut));
+//  }
+
+//  @Test
 //  void testPDFFileCycle() throws IOException {
 //    // SETUP
 //    byte[] key = {

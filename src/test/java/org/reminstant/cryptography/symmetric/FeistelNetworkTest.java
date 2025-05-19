@@ -31,7 +31,7 @@ public class FeistelNetworkTest {
 
     // EXECUTION
     SymmetricCryptoSystem feistelNetwork = new FeistelNetwork(
-        _ -> roundKeys, feistelFunction, 4, null);
+        _ -> roundKeys, feistelFunction, 4, null) {};
 
     byte[] actualCipherText = feistelNetwork.encrypt(message);
 
@@ -55,7 +55,7 @@ public class FeistelNetworkTest {
 
     // EXECUTION
     SymmetricCryptoSystem feistelNetwork = new FeistelNetwork(
-        _ -> roundKeys, feistelFunction, 4, null);
+        _ -> roundKeys, feistelFunction, 4, null) {};
 
     byte[] decryptedMessage = feistelNetwork.decrypt(cipherText);
 
@@ -83,7 +83,7 @@ public class FeistelNetworkTest {
 
     // EXECUTION
     SymmetricCryptoSystem feistelNetwork = new FeistelNetwork(
-        _ -> roundKeys, feistelFunction, 4, null);
+        _ -> roundKeys, feistelFunction, 4, null) {};
 
     byte[] decryptedMessage = feistelNetwork.decrypt(feistelNetwork.encrypt(message));
 

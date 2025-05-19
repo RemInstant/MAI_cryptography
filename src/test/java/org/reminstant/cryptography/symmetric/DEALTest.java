@@ -116,7 +116,6 @@ public class DEALTest {
 
     // EXECUTION
     SymmetricCryptoSystem deal = new DEAL(key);
-    System.out.println("!");
     byte[] actualCipherText = deal.encrypt(message);
 
     // ASSERTION
@@ -125,7 +124,7 @@ public class DEALTest {
   }
 
   @Test(dataProvider = "ValidDataForDEAL")
-  void testDESDecryption(byte[] key, byte[] expectedMessage, byte[] cipher) {
+  void testDEALDecryption(byte[] key, byte[] expectedMessage, byte[] cipher) {
     // SETUP
     byte[] originalCipher = Arrays.copyOf(cipher, cipher.length);
 
@@ -139,7 +138,7 @@ public class DEALTest {
   }
 
   @Test(dataProvider = "ValidDataForDEAL")
-  void testDESCycle(byte[] key, byte[] message, byte[] cipher) {
+  void testDEALCycle(byte[] key, byte[] message, byte[] cipher) {
     // EXECUTION
     SymmetricCryptoSystem deal = new DEAL(key);
     byte[] decryptedMessage = deal.decrypt(deal.encrypt(message));

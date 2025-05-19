@@ -1,0 +1,156 @@
+INPUT = EC7DA9E0D92987B8
+ROUND_KEY = 8A4D04AC0CE59F4A
+X = EC7DA9E0D92987B88A4D04AC0CE59F4A
+
+Feistel(EC7DA9E0D92987B88A4D04AC0CE59F4A)
+E3(EC7DA9E0D92987B88A4D04AC0CE59F4A)
+
+--------------C1--------------
+INPUT = EC7DA9E0D92987B88A4D04AC0CE59F4A
+C1 = T(EC7DA9E0D92987B88A4D04AC0CE59F4A)
+C1 = T(EC, 7D, A9, E0, D9, 29, 87, B8, 8A, 4D, 04, AC, 0C, E5, 9F, 4A)
+T(INPUT) = P(P(P(P(INPUT))))
+
+P1 = P(EC, 7D, A9, E0, D9, 29, 87, B8, 8A, 4D, 04, AC, 0C, E5, 9F, 4A)
+P1 = (PE(EC,8A), PE(7D,4D), PE(A9,04), PE(E0,AC),
+      PE(D9,0C), PE(29,E5), PE(87,9F), PE(B8,4A))
+P1 = (A(EC,8A), A(8A,EC), A(7D,4D), A(4D,7D),
+      A(A9,04), A(04,A9), A(E0,AC), A(AC,E0),
+      A(D9,0C), A(0C,D9), A(29,E5), A(E5,29),
+      A(87,9F), A(9F,87), A(B8,4A), A(4A,B8))
+P1 = (0E, 66, CD, AA, 3A, 99, F1, D2, 70, 67, 7C, 1B, 1F, C8, 8E, EE)
+
+P2 = P(P1) = P(0E, 66, CD, AA, 3A, 99, F1, D2, 70, 67, 7C, 1B, 1F, C8, 8E, EE)
+P2 = (PE(0E,70), PE(66,67), PE(CD,7C), PE(AA,1B),
+      PE(3A,1F), PE(99,C8), PE(F1,8E), PE(D2,EE))
+P2 = (A(0E,70), A(70,0E), A(66,67), A(67,66),
+      A(CD,7C), A(7C,CD), A(AA,1B), A(1B,AA),
+      A(3A,1F), A(1F,3A), A(99,C8), A(C8,99),
+      A(F1,8E), A(8E,F1), A(D2,EE), A(EE,D2))
+P2 = (37, 3A, E1, 9E, 53, C6, 29, CC, AA, FA, 52, 4A, 92, 7D, 70, 2A)
+
+P3 = P(P2) = P(37, 3A, E1, 9E, 53, C6, 29, CC, AA, FA, 52, 4A, 92, 7D, 70, 2A)
+P3 = (PE(37,AA), PE(3A,FA), PE(E1,52), PE(9E,4A),
+      PE(53,92), PE(C6,7D), PE(29,70), PE(CC,2A))
+P3 = (A(37,AA), A(AA,37), A(3A,FA), A(FA,3A),
+      A(E1,52), A(52,E1), A(9E,4A), A(4A,9E),
+      A(53,92), A(92,53), A(C6,7D), A(7D,C6),
+      A(29,70), A(70,29), A(CC,2A), A(2A,CC))
+P3 = (3C, BF, 0E, CB, B4, 8B, 08, 78, E1, 03, 3E, 88, 61, DD, 04, 6F)
+
+P4 = P(P3) = P(3C, BF, 0E, CB, B4, 8B, 08, 78, E1, 03, 3E, 88, 61, DD, 04, 6F)
+P4 = (PE(3C,E1), PE(BF,03), PE(0E,3E), PE(CB,88),
+      PE(B4,61), PE(8B,DD), PE(08,04), PE(78,6F))
+P4 = (A(3C,E1), A(E1,3C), A(BF,03), A(03,BF),
+      A(0E,3E), A(3E,0E), A(CB,88), A(88,CB),
+      A(B4,61), A(61,B4), A(8B,DD), A(DD,8B),
+      A(08,04), A(04,08), A(78,6F), A(6F,78))
+P4 = (62, 6E, BC, FE, 34, 3E, 92, 32, BF, DE, 73, 5C, DF, 35, EF, FC)
+
+X  = EC7DA9E0D92987B88A4D04AC0CE59F4A
+XL = EC7DA9E0D92987B8
+XR = 8A4D04AC0CE59F4A
+C1 = (62, 6E, BC, FE, 34, 3E, 92, 32, BF, DE, 73, 5C, DF, 35, EF, FC)
+C1E = (62, BC, 34, 92, BF, 73, DF, EF) = 62BC3492BF73DFEF
+C1O = (6E, FE, 3E, 32, DE, 5C, 35, FC) = 6EFE3E32DE5C35FC
+nextInput = (XL ^ C1E, XR ^ C1O) = 8EC19D72665A5857, E4B33A9ED2B9AAB6
+
+--------------C2--------------
+INPUT = 8EC19D72665A5857E4B33A9ED2B9AAB6
+C2 = T(8EC19D72665A5857E4B33A9ED2B9AAB6)
+C2 = T(8E, C1, 9D, 72, 66, 5A, 58, 57, E4, B3, 3A, 9E, D2, B9, AA, B6)
+T(INPUT) = P(P(P(P(INPUT))))
+
+P1 = P(8E, C1, 9D, 72, 66, 5A, 58, 57, E4, B3, 3A, 9E, D2, B9, AA, B6)
+P1 = (PE(8E,E4), PE(C1,B3), PE(9D,3A), PE(72,9E),
+      PE(66,D2), PE(5A,B9), PE(58,AA), PE(57,B6))
+P1 = (A(8E,E4), A(E4,8E), A(C1,B3), A(B3,C1),
+      A(9D,3A), A(3A,9D), A(72,9E), A(9E,72),
+      A(66,D2), A(D2,66), A(5A,B9), A(B9,5A),
+      A(58,AA), A(AA,58), A(57,B6), A(B6,57))
+P1 = (F6, 8E, 7D, 39, E2, C4, 7C, 1F, 28, FC, A8, B6, 2C, A9, CA, B9)
+
+P2 = P(P1) = P(F6, 8E, 7D, 39, E2, C4, 7C, 1F, 28, FC, A8, B6, 2C, A9, CA, B9)
+P2 = (PE(F6,28), PE(8E,FC), PE(7D,A8), PE(39,B6),
+      PE(E2,2C), PE(C4,A9), PE(7C,CA), PE(1F,B9))
+P2 = (A(F6,28), A(28,F6), A(8E,FC), A(FC,8E),
+      A(7D,A8), A(A8,7D), A(39,B6), A(B6,39),
+      A(E2,2C), A(2C,E2), A(C4,A9), A(A9,C4),
+      A(7C,CA), A(CA,7C), A(1F,B9), A(B9,1F))
+P2 = (13, 2B, 8B, 8D, 54, 12, 53, D3, EF, 22, ED, 13, 46, A8, 8E, 00)
+
+P3 = P(P2) = P(13, 2B, 8B, 8D, 54, 12, 53, D3, EF, 22, ED, 13, 46, A8, 8E, 00)
+P3 = (PE(13,EF), PE(2B,22), PE(8B,ED), PE(8D,13),
+      PE(54,46), PE(12,A8), PE(53,8E), PE(D3,00))
+P3 = (A(13,EF), A(EF,13), A(2B,22), A(22,2B),
+      A(8B,ED), A(ED,8B), A(8D,13), A(13,8D),
+      A(54,46), A(46,54), A(12,A8), A(A8,12),
+      A(53,8E), A(8E,53), A(D3,00), A(00,D3))
+P3 = (05, AD, 58, 94, E8, A4, 47, F0, F8, 1C, 92, 32, 66, BD, B0, 20)
+
+P4 = P(P3) = P(05, AD, 58, 94, E8, A4, 47, F0, F8, 1C, 92, 32, 66, BD, B0, 20)
+P4 = (PE(05,F8), PE(AD,1C), PE(58,92), PE(94,32),
+      PE(E8,66), PE(A4,BD), PE(47,B0), PE(F0,20))
+P4 = (A(05,F8), A(F8,05), A(AD,1C), A(1C,AD),
+      A(58,92), A(92,58), A(94,32), A(32,94),
+      A(E8,66), A(66,E8), A(A4,BD), A(BD,A4),
+      A(47,B0), A(B0,47), A(F0,20), A(20,F0))
+P4 = (4C, A0, 32, B1, 7F, F9, DC, 16, D0, 14, 75, 7D, 5C, E7, AA, D9)
+
+X  = EC7DA9E0D92987B88A4D04AC0CE59F4A
+XL = EC7DA9E0D92987B8
+XR = 8A4D04AC0CE59F4A
+C2 = (4C, A0, 32, B1, 7F, F9, DC, 16, D0, 14, 75, 7D, 5C, E7, AA, D9)
+C2E = (4C, 32, 7F, DC, D0, 75, 5C, AA) = 4C327FDCD0755CAA
+C2O = (A0, B1, F9, 16, 14, 7D, E7, D9) = A0B1F916147DE7D9
+nextInput = (XL ^ C2E, XR ^ C2O) = A04FD63C095CDB12, 2AFCFDBA18987893
+
+--------------C3--------------
+INPUT = A04FD63C095CDB122AFCFDBA18987893
+C3 = T(A04FD63C095CDB122AFCFDBA18987893)
+C3 = T(A0, 4F, D6, 3C, 09, 5C, DB, 12, 2A, FC, FD, BA, 18, 98, 78, 93)
+T(INPUT) = P(P(P(P(INPUT))))
+
+P1 = P(A0, 4F, D6, 3C, 09, 5C, DB, 12, 2A, FC, FD, BA, 18, 98, 78, 93)
+P1 = (PE(A0,2A), PE(4F,FC), PE(D6,FD), PE(3C,BA),
+      PE(09,18), PE(5C,98), PE(DB,78), PE(12,93))
+P1 = (A(A0,2A), A(2A,A0), A(4F,FC), A(FC,4F),
+      A(D6,FD), A(FD,D6), A(3C,BA), A(BA,3C),
+      A(09,18), A(18,09), A(5C,98), A(98,5C),
+      A(DB,78), A(78,DB), A(12,93), A(93,12))
+P1 = (B4, F3, 58, 09, E7, 14, 7E, 32, 28, B0, 89, 8C, 59, 18, 51, EF)
+
+P2 = P(P1) = P(B4, F3, 58, 09, E7, 14, 7E, 32, 28, B0, 89, 8C, 59, 18, 51, EF)
+P2 = (PE(B4,28), PE(F3,B0), PE(58,89), PE(09,8C),
+      PE(E7,59), PE(14,18), PE(7E,51), PE(32,EF))
+P2 = (A(B4,28), A(28,B4), A(F3,B0), A(B0,F3),
+      A(58,89), A(89,58), A(09,8C), A(8C,09),
+      A(E7,59), A(59,E7), A(14,18), A(18,14),
+      A(7E,51), A(51,7E), A(32,EF), A(EF,32))
+P2 = (E1, D2, C0, D7, C6, 92, A8, AD, E5, 70, C6, 49, 86, 61, 3B, 5A)
+
+P3 = P(P2) = P(E1, D2, C0, D7, C6, 92, A8, AD, E5, 70, C6, 49, 86, 61, 3B, 5A)
+P3 = (PE(E1,E5), PE(D2,70), PE(C0,C6), PE(D7,49),
+      PE(C6,86), PE(92,61), PE(A8,3B), PE(AD,5A))
+P3 = (A(E1,E5), A(E5,E1), A(D2,70), A(70,D2),
+      A(C0,C6), A(C6,C0), A(D7,49), A(49,D7),
+      A(C6,86), A(86,C6), A(92,61), A(61,92),
+      A(A8,3B), A(3B,A8), A(AD,5A), A(5A,AD))
+P3 = (92, 11, F3, 78, DD, 1E, F9, DB, A9, F5, 11, 80, B0, DB, 36, 0C)
+
+P4 = P(P3) = P(92, 11, F3, 78, DD, 1E, F9, DB, A9, F5, 11, 80, B0, DB, 36, 0C)
+P4 = (PE(92,A9), PE(11,F5), PE(F3,11), PE(78,80),
+      PE(DD,B0), PE(1E,DB), PE(F9,36), PE(DB,0C))
+P4 = (A(92,A9), A(A9,92), A(11,F5), A(F5,11),
+      A(F3,11), A(11,F3), A(78,80), A(80,78),
+      A(DD,B0), A(B0,DD), A(1E,DB), A(DB,1E),
+      A(F9,36), A(36,F9), A(DB,0C), A(0C,DB))
+P4 = (28, 16, EA, D5, ED, 53, 9F, BA, F0, CE, 43, 7C, 2A, 0B, 1C, 09)
+
+C3 = (28, 16, EA, D5, ED, 53, 9F, BA, F0, CE, 43, 7C, 2A, 0B, 1C, 09)
+C3E = (28, EA, ED, 9F, F0, 43, 2A, 1C) = 28EAED9FF0432A1C
+
+Feistel(EC7DA9E0D92987B88A4D04AC0CE59F4A)
+Feistel(X) = E3(X) = C3E(X)
+
+Feistel(INPUT,ROUND_KEY) = 28EAED9FF0432A1C
