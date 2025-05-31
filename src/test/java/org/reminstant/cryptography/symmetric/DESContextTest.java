@@ -1498,6 +1498,51 @@ public class DESContextTest {
     Assert.assertTrue(areFilesEqual(in, decOut));
   }
 
+  @Test
+  void testEmptyTextFileCycle() throws IOException {
+    // SETUP
+    byte[] key = {
+        (byte) 0x55, (byte) 0x46, (byte) 0xEA, (byte) 0xDD, (byte) 0x5C, (byte) 0x59, (byte) 0xE9
+    };
+    byte[] initVector = {
+        (byte) 0x5a, (byte) 0xa8, (byte) 0x08, (byte) 0x43, (byte) 0x19, (byte) 0xe5, (byte) 0xd8, (byte) 0x2d,
+    };
+
+    String in = testDirectory + "/emptyText";
+    String encOut = testDirectory + "/encryptedEmptyText";
+    String decOut = testDirectory + "/decryptedEmptyText";
+
+    // EXECUTION
+    var cryptoSystem = new DES(key);
+    var cryptoContext = new SymmetricCryptoContext(cryptoSystem, Padding.PKCS7, BlockCipherMode.PCBC, initVector);
+
+    CryptoProgress<Void> encProgress = cryptoContext.encryptAsync(in, encOut);
+    AtomicReference<CryptoProgress<Void>> decProgressRef = new AtomicReference<>();
+
+    encProgress.getFuture()
+        .thenStronglyRunAsync(() -> decProgressRef.set(cryptoContext.decryptAsync(encOut, decOut)));
+
+    while (!encProgress.isDone()) {
+      System.out.println("Прогресс шифрования: " + encProgress.getProgress() + " ");
+      ConcurrentUtil.sleepSafely(20);
+    }
+    System.out.println("Прогресс шифрования: " + encProgress.getProgress());
+
+    while (decProgressRef.get() == null) {
+      System.out.println("Ожидание начала дешифрования: ");
+      ConcurrentUtil.sleepSafely(1);
+    }
+
+    while (!decProgressRef.get().isDone()) {
+      System.out.println("Прогресс дешифрования: " + decProgressRef.get().getProgress());
+      ConcurrentUtil.sleepSafely(20);
+    }
+    System.out.println("Прогресс дешифрования: " + decProgressRef.get().getProgress());
+
+    // ASSERTION
+    Assert.assertTrue(areFilesEqual(in, decOut));
+  }
+
 //  @Test
 //  void testPictureFileCycle2() throws IOException {
 //    // SETUP
